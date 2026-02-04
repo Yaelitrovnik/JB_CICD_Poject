@@ -18,7 +18,7 @@ MAC=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/lates
 VPC_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/network/interfaces/macs/${MAC}/vpc-id)
 
 # 3. Pull and Run
-docker pull yaelitrovnik/flask-aws-monitor:latest
+docker pull ${docker_username}/flask-aws-monitor:latest
 
 # We pass the metadata into the container
 # Note: For SSH_KEY_PATH, we show the name defined in Terraform for the dashboard
@@ -30,4 +30,4 @@ docker run -d \
   -e REGION="$REGION" \
   -e SSH_KEY_PATH="AWS KeyPair: builder_key" \
   --restart always \
-  yaelitrovnik/flask-aws-monitor:latest
+  ${docker_username}/flask-aws-monitor:latest

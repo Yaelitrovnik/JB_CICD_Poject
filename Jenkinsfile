@@ -1,10 +1,15 @@
 pipeline {
     agent any
 
+    // New users just type their username in the Jenkins UI.
+    parameters {
+        string(name: 'DOCKER_USER', defaultValue: 'yaelitrovnik', description: 'Your Docker Hub Username')
+    }
+
     environment {
-        // Must match the IDs in Jenkins Manage Credentials
-        DOCKER_CREDS = credentials('dockerhub-credentials') 
-        IMAGE_NAME   = "yaelitrovnik/flask-aws-monitor"
+        // We reference the parameter here so the rest of the script is dynamic
+        IMAGE_NAME   = "${params.DOCKER_USER}/flask-aws-monitor"
+        DOCKER_CREDS = credentials('dockerhub-credentials')
     }
 
     stages {
@@ -20,9 +25,7 @@ pipeline {
                 stage('Linting') {
                     steps {
                         script {
-                            echo "--- Running Linting ---"
                             dir('app') {
-                                // Ignore long lines (E501) common in HTML-in-Python
                                 sh 'pip install flake8 && flake8 app.py --ignore=E501 || true'
                             }
                         }
@@ -31,7 +34,6 @@ pipeline {
                 stage('Security Scan') {
                     steps {
                         script {
-                            echo "--- Running Security Scan ---"
                             dir('app') {
                                 sh 'pip install bandit && bandit -r . || true'
                             }
@@ -44,8 +46,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo "--- Building Image ---"
-                    // Use 'app/' as the build context because the Dockerfile is inside it
+                    echo "--- Building Image for user: ${params.DOCKER_USER} ---"
                     sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} -t ${IMAGE_NAME}:latest app/"
                 }
             }
@@ -54,8 +55,8 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    echo "--- Pushing to Docker Hub ---"
-                    sh "echo $DOCKER_CREDS_PASSWORD | docker login -u $DOCKER_CREDS_USR --password-stdin"
+                    // SECURE: No passwords here. Jenkins pulls them from the 'dockerhub-credentials' ID.
+                    sh "echo \$DOCKER_CREDS_PASSWORD | docker login -u \$DOCKER_CREDS_USR --password-stdin"
                     sh "docker push ${IMAGE_NAME}:${env.BUILD_NUMBER}"
                     sh "docker push ${IMAGE_NAME}:latest"
                 }
@@ -64,16 +65,16 @@ pipeline {
 
         stage('Deploy Infrastructure (Terraform)') {
             environment {
+                // SECURE: These are mapped to variables only for this stage's memory
                 AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
                 AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
             }
             steps {
                 script {
-                    echo "--- Starting Terraform Deployment ---"
                     dir('terraform') {
                         sh 'terraform init'
-                        sh 'terraform apply -auto-approve'
-                        // This prints the final URL in your Jenkins Console Output
+                        // DYNAMIC: Passing the Docker User parameter directly into Terraform
+                        sh "terraform apply -auto-approve -var='docker_username=${params.DOCKER_USER}'"
                         sh 'terraform output web_dashboard_url'
                     }
                 }
@@ -85,15 +86,8 @@ pipeline {
         always {
             script {
                 sh "docker logout"
-                // Optional: Clean up workspace to save disk space
                 cleanWs()
             }
-        }
-        success {
-            echo "🚀 Deployment Successful! Check the URL in the logs above."
-        }
-        failure {
-            echo "❌ Pipeline Failed. Check the 'Console Output' for details."
         }
     }
 }

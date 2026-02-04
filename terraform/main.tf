@@ -55,7 +55,9 @@ resource "aws_instance" "builder_instance" {
     http_tokens   = "required" 
   }
 
-  user_data = file("user_data.sh")
+  user_data = templatefile("user_data.sh", {
+    docker_username = var.docker_username
+  })
 
   tags = {
     Name = "JBP-Builder-Instance"

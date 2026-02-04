@@ -6,6 +6,12 @@ variable "key_name" {
   default     = "builder_key"
 }
 
+variable "docker_username" {
+  description = "Your Docker Hub username"
+  type        = string
+  default     = "yaelitrovnik" # New users change this
+}
+
 variable "private_key_path" {
   description = "Path to save SSH private key locally"
   type        = string
