@@ -7,8 +7,9 @@ variable "key_name" {
 }
 
 variable "private_key_path" {
-  description = "./builder_key.pem"
+  description = "Path to save SSH private key locally"
   type        = string
+  default     = "./builder_key.pem" 
 }
 
 variable "instance_type" {
