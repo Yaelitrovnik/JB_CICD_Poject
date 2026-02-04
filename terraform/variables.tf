@@ -7,7 +7,7 @@ variable "key_name" {
 }
 
 variable "private_key_path" {
-  description = "Absolute path to save SSH private key (example: C:/Users/user/.ssh/builder_key.pem)"
+  description = "./builder_key.pem"
   type        = string
 }
 

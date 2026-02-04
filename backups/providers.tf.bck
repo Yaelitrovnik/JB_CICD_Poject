@@ -21,9 +21,6 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
-  # REMOVED: shared_credentials_files 
-  # Terraform will now automatically use:
-  # 1. Environment Variables (for Jenkins)
-  # 2. Local AWS CLI profile (for VS Code)
+  region                  = var.aws_region
+  shared_credentials_files = ["${pathexpand("~/.aws/credentials")}"]
 }

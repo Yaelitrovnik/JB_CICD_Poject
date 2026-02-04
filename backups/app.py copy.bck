@@ -6,20 +6,14 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    # --- NEW: IMDSv2 TOKEN LOGIC ---
+    # Attempt to get Public IP from AWS Metadata Service
     try:
-        # Step 1: Get the Token
-        token_url = "http://169.254.169.254/latest/api/token"
-        headers = {"X-aws-ec2-metadata-token-ttl-seconds": "21600"}
-        token = requests.put(token_url, headers=headers, timeout=2).text
-
-        # Step 2: Use Token to get Public IP
-        meta_headers = {"X-aws-ec2-metadata-token": token}
-        public_ip = requests.get("http://169.254.169.254/latest/meta-data/public-ipv4", headers=meta_headers, timeout=2).text
+        public_ip = requests.get("http://169.254.169.254/latest/meta-data/public-ipv4", timeout=2).text
     except Exception:
-        public_ip = "Metadata Service Unavailable (Check IMDSv2 settings)"
+        # Fallback if metadata is unreachable (common in some Docker network modes)
+        public_ip = "Metadata Service Unavailable"
 
-    # Environment variables injected via Docker run in user_data.sh
+    # These are passed into the container via the 'docker run -e' command in user_data.sh
     ssh_key_path = os.getenv("SSH_KEY_PATH", "Unknown")
     security_group_id = os.getenv("SECURITY_GROUP_ID", "Unknown")
     instance_type = os.getenv("INSTANCE_TYPE", "Unknown")
@@ -144,5 +138,4 @@ def home():
     """
 
 if __name__ == "__main__":
-    # Host 0.0.0.0 is mandatory for Docker access
     app.run(host="0.0.0.0", port=5001)

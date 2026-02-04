@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Must match the ID in Jenkins Manage Credentials
+        // Must match the IDs in Jenkins Manage Credentials
         DOCKER_CREDS = credentials('dockerhub-credentials') 
         IMAGE_NAME   = "yaelitrovnik/flask-aws-monitor"
     }
@@ -20,22 +20,21 @@ pipeline {
                 stage('Linting') {
                     steps {
                         script {
-                            echo "--- Running Linting in /app directory ---"
+                            echo "--- Running Linting ---"
                             dir('app') {
+                                // Ignore long lines (E501) common in HTML-in-Python
                                 sh 'pip install flake8 && flake8 app.py --ignore=E501 || true'
                             }
-                            sh 'echo "Hadolint: Dockerfile check passed."'
                         }
                     }
                 }
                 stage('Security Scan') {
                     steps {
                         script {
-                            echo "--- Running Security Scan in /app directory ---"
+                            echo "--- Running Security Scan ---"
                             dir('app') {
                                 sh 'pip install bandit && bandit -r . || true'
                             }
-                            sh 'echo "Trivy: Container scan passed."'
                         }
                     }
                 }
@@ -45,8 +44,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo "--- Building Image from /app context ---"
-                    // Build using the 'app' folder as the context
+                    echo "--- Building Image ---"
+                    // Use 'app/' as the build context because the Dockerfile is inside it
                     sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} -t ${IMAGE_NAME}:latest app/"
                 }
             }
@@ -62,17 +61,39 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy Infrastructure (Terraform)') {
+            environment {
+                AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
+                AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+            }
+            steps {
+                script {
+                    echo "--- Starting Terraform Deployment ---"
+                    dir('terraform') {
+                        sh 'terraform init'
+                        sh 'terraform apply -auto-approve'
+                        // This prints the final URL in your Jenkins Console Output
+                        sh 'terraform output web_dashboard_url'
+                    }
+                }
+            }
+        }
     }
 
     post {
         always {
-            sh "docker logout"
+            script {
+                sh "docker logout"
+                // Optional: Clean up workspace to save disk space
+                cleanWs()
+            }
         }
         success {
-            echo "Pipeline Successful! Deployment ready."
+            echo "🚀 Deployment Successful! Check the URL in the logs above."
         }
         failure {
-            echo "Pipeline Failed. Review the logs above."
+            echo "❌ Pipeline Failed. Check the 'Console Output' for details."
         }
     }
 }
