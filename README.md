@@ -66,7 +66,7 @@ In Jenkins, go to **Manage Jenkins > Credentials** and add these three secrets:
 ## 📂 4. Project Structure
 
 ```text
-.
+JB_CICD_Project
 ├── Jenkinsfile             # Automation Pipeline
 ├── app/                    # Flask Application & Dockerfile
 │   ├── app.py             
@@ -76,6 +76,7 @@ In Jenkins, go to **Manage Jenkins > Credentials** and add these three secrets:
 │   ├── main.tf             # EC2 & Security Resources
 │   ├── variables.tf        # Configuration Inputs
 │   └── user_data.sh        # EC2 Bootstrap Template
+├── README.md               # This file
 └── WEBHOOK_GUIDE.md        # Detailed Webhook troubleshooting
 ```
 ---
