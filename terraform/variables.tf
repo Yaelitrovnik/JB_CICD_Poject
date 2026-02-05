@@ -1,0 +1,49 @@
+# variables.tf
+
+variable "key_name" {
+  description = "Name of the SSH key pair for EC2 instance"
+  type        = string
+  default     = "builder_key"
+}
+
+variable "docker_username" {
+  description = "Your Docker Hub username"
+  type        = string
+  default     = "yaelitrovnik" # New users change this
+}
+
+variable "private_key_path" {
+  description = "Path to save SSH private key locally"
+  type        = string
+  default     = "./builder_key.pem" 
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "vpc_name" {
+  description = "Name tag of the target VPC"
+  type        = string
+  default     = "JBP-vpc"
+}
+
+variable "public_subnet_name" {
+  description = "Name tag of the public subnet within the VPC"
+  type        = string
+  default     = "JBP-subnet"
+}
+
+variable "aws_region" {
+  description = "AWS region to deploy resources"
+  type        = string
+  default     = "us-east-2"
+}
+
+variable "ami_id" {
+  description = "AMI ID for Ubuntu 22.04"
+  type        = string
+  default     = ""  # optional, if you want to override
+}
