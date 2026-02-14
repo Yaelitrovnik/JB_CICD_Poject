@@ -17,8 +17,9 @@ resource "local_file" "private_key" {
 
 # 2. Security Group (Matches your requirements for port 22 and 5001)
 resource "aws_security_group" "builder_sg" {
-  name        = "jenkins-project-sg"
+  name        = "builder-sg"
   description = "Allow SSH and Flask App"
+
 
   ingress {
     from_port   = 22
