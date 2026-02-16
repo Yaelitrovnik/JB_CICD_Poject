@@ -137,7 +137,9 @@ variable "aws_region" {
 }
 ```
 
-**Important**: If you're **reviewing this project**, you can leave `docker_username` as `"yaelitrovnik"` to use the author's pre-built Docker image.
+***Important***
+-  **If you're reviewing this project** you can leave `docker_username` as `"yaelitrovnik"` to use the author's pre-built Docker image.
+- **Build with Parameters** field in Jenkins takes priority over the variables.tf default value.
 
 ### Step 3: Create Jenkins Pipeline Job
 

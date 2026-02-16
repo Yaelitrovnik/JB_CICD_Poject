@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     // SECURE: No passwords here. Jenkins pulls them from the 'dockerhub-credentials' ID.
-                    sh "echo \$DOCKER_CREDS_PASSWORD | docker login -u \$DOCKER_CREDS_USR --password-stdin"
+                    sh "echo \$DOCKER_CREDS_PSW | docker login -u \$DOCKER_CREDS_USR --password-stdin"
                     sh "docker push ${IMAGE_NAME}:${env.BUILD_NUMBER}"
                     sh "docker push ${IMAGE_NAME}:latest"
                 }
