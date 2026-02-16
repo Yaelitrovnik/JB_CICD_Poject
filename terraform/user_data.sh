@@ -31,6 +31,7 @@ docker run -d \
   -e INSTANCE_TYPE="$INSTANCE_TYPE" \
   -e VPC_ID="$VPC_ID" \
   -e REGION="$REGION" \
+  -e SECURITY_GROUP_ID="$SECURITY_GROUP_ID" \
   -e SSH_KEY_PATH="AWS KeyPair: builder_key" \
   --restart always \
   ${docker_username}/flask-aws-monitor:latest
